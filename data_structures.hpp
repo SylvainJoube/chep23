@@ -4,6 +4,7 @@
 #include "types.hpp"
 #include <vector>
 #include <iostream>
+#include <array>
 
 namespace kwk
 {

@@ -18,10 +18,10 @@
  * This function takes the output of our kernel and writes it to a file, adding
  * the necessary headers to turn it into a bitmap image.
  */
-void render_bitmap(
-    char * img, unsigned int w, unsigned int h, std::string fname
-)
+void render_bitmap(img_type const& data, std::string fname)
 {
+    auto [w,h] = data.shape();
+    auto img = data.get_data();
     /*
      * Start by opening our output file in binary format.
      */

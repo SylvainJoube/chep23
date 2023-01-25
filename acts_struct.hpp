@@ -7,22 +7,24 @@
 #include <memory>
 #include <cmath>
 #include "data_structures.hpp"
+#include <kwk/kwk.hpp>
 
 struct acts_data
 {
+  using data_t = kwk::make_table_t<kwk::as<pt3D<float>>, kwk::_3D>;
+
   bool should_display(bool modify = false);
   void read_acts_file();
-  pt3D<float> at(const pt3D<float> &p);
+  pt3D<float> at(const pt3D<float> &p) { return at_affine(p); }
   pt3D<float> at_affine(const pt3D<float> &p);
   pt3D<float> at_linear(const pt3D<float> &p);
-  pt3D<float> at_strided(const pt3D<std::size_t> &c);
-  pt3D<float> at_array(std::size_t c) { return data[c]; }
 
   static const std::size_t dims = 3;
   SCALAR_TYPE matrix[dims * (dims + 1)];
-  std::size_t stride_sizes[dims];
+  std::size_t dimensions[dims];
   std::size_t read_numel;
-  std::unique_ptr<pt3D<float>[]> data;
+  
+  data_t data;
   uint S_DISPLAY_COUNT_AFFINE = 0;
   uint S_DISPLAY_COUNT_MAX = 0;
 

@@ -10,6 +10,13 @@
 
 #define ENABLE_DISPLAY false
 
+/*
+On a passé pas mal de temps à redevier l'ordre des coordonnées
+parce qu'elles ne sont pas typées.
+A partir du moment où Kiwaku est utilisé pour définir le format des tables,
+il n'y a plus le souci de savoir quelles dimensions sont où.
+*/
+
 #if ENABLE_DISPLAY
 bool acts_data::should_display(bool modify)
 {
@@ -33,11 +40,11 @@ void acts_data::read_acts_file()
   }
 
   ifs.read(reinterpret_cast<char *>(&matrix), sizeof(matrix));
-  ifs.read(reinterpret_cast<char *>(&stride_sizes), sizeof(stride_sizes));
+  ifs.read(reinterpret_cast<char *>(&dimensions), sizeof(dimensions));
   ifs.read(reinterpret_cast<char *>(&read_numel), sizeof(read_numel));
 
-  data = std::make_unique<pt3D<float>[]>(read_numel);
-  ifs.read(reinterpret_cast<char *>(data.get()), read_numel * sizeof(pt3D<float>));
+  data = data_t{kwk::of_size(dimensions[0], dimensions[1], dimensions[2])};
+  ifs.read(reinterpret_cast<char *>(data.get_data()), read_numel * sizeof(pt3D<float>));
 
   ifs.close();
 
@@ -65,16 +72,16 @@ void acts_data::read_acts_file()
   std::cout << "Dimension sizes:  ";
   for (std::size_t i = 0; i < dims; ++i)
   {
-    std::cout << stride_sizes[i] << " ";
+    std::cout << dimensions[i] << " ";
   }
   std::cout << "\n";
   std::size_t excepted_numel = 0;
   for (std::size_t i = 0; i < dims; ++i)
   {
     if (i == 0)
-      excepted_numel = stride_sizes[i];
+      excepted_numel = dimensions[i];
     else
-      excepted_numel *= stride_sizes[i];
+      excepted_numel *= dimensions[i];
   }
 
   if (excepted_numel != read_numel)
@@ -97,10 +104,6 @@ void acts_data::read_acts_file()
 
 
 
-pt3D<float> acts_data::at(const pt3D<float> &p)
-{
-  return at_affine(p);
-}
 
 pt3D<float> acts_data::at_affine(const pt3D<float> & p)
 {
@@ -168,13 +171,13 @@ pt3D<float> acts_data::at_linear(const pt3D<float> &p)
     std::size_t p0 = i + ((n & 4) ? 1 : 0);
     std::size_t p1 = j + ((n & 2) ? 1 : 0);
     std::size_t p2 = k + ((n & 1) ? 1 : 0);
-    pt3D<std::size_t> pp = {p0, p1, p2};
+    auto pp = kumi::tuple{p0, p1, p2};
 
     #if ENABLE_DISPLAY
     if (display) std::cout << pp << " ";
     #endif
 
-    pc[n] = at_strided(pp);
+    pc[n] = data(pp);
   }
 
   #if ENABLE_DISPLAY
@@ -197,35 +200,4 @@ pt3D<float> acts_data::at_linear(const pt3D<float> &p)
   return rv;
 }
 
-pt3D<float> acts_data::at_strided(const pt3D<std::size_t> &c)
-{
-  float idx = 0;
-
-  #if ENABLE_DISPLAY
-  bool display = should_display();
-  #endif
-
-  for (std::size_t k = 0; k < dims; ++k)
-  {
-      float tmp = c[k];
-
-      for (std::size_t l = k + 1; l < dims; ++l) {
-          tmp *= stride_sizes[l];
-      }
-
-      idx += tmp;
-  }
-
-  #if ENABLE_DISPLAY
-  if (display) std::cout << "Strided access at " << idx << "\n";
-  #endif
-
-  auto value = at_array(idx);
-
-  #if ENABLE_DISPLAY
-  if (display) std::cout << "Value = " << value << "\n";
-  #endif
-
-  return value;
-}
 

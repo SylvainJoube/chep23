@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cstddef>
-#include <fstream>
-#include <vector>
-#include <memory>
+// #include <fstream>
+// #include <vector>
+// #include <memory>
 #include <cmath>
 #include <chrono>
 #include "bitmap.hpp"
@@ -10,6 +10,7 @@
 #include "data_structures.hpp"
 #include "types.hpp"
 #include "acts_struct.hpp"
+#include <kwk/kwk.hpp>
 
 // joube@ls-cassidi:~/shared/covfie-stephen$ cmake --build build -- -j $(nproc) && build/examples/cpu/render_slice_cpu --input atlas.cvf --output my_image.bmp --z 0
 
@@ -54,34 +55,38 @@ void render_slice()
   acts_data a;
   a.read_acts_file();
 
-  uint image_width  = 1024;
-  uint image_height = 1024;
-  float z_value = 0;
+  uint const width  = 1024;
+  uint const height = 1024;
 
-  std::unique_ptr<char[]> img =
-    std::make_unique<char[]>(image_width * image_height);
+  auto img = kwk::table{kwk::type = kwk::int8_, kwk::of_size(width, height)};
 
   std::chrono::high_resolution_clock::time_point t1 =
-    std::chrono::high_resolution_clock::now();
+  std::chrono::high_resolution_clock::now();
 
-  for (uint x = 0; x < image_width; ++x) {
-    for (uint y = 0; y < image_height; ++y) {
-      float fx = x / static_cast<float>(image_width);
-      float fy = y / static_cast<float>(image_height);
+  kwk::for_each_index([ fw = static_cast<float>(width)
+                      , fh = static_cast<float>(height)
+                      , z_value = 0.f
+                      , &a
+                      ]
+  (auto& e, auto pos) 
+  {
+    auto[x,y] = pos;
+    float fx = x / fw;
+    float fy = y / fh;
 
-      pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
+    pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
 
-      pt3D<float> p = a.at(asked);
-      // Do something with p
-      img[image_height * x + y] =
-                static_cast<char>(std::lround(
-                    255.f *
-                    std::min(
-                        std::sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 1.0f
-                    )
-                ));
-    }
+    pt3D<float> p = a.at(asked);
+    // Do something with p
+    e = static_cast<char>(std::lround(
+                  255.f *
+                  std::min(
+                      std::sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 1.0f
+                  )
+              ));
   }
+  , img
+  );
 
   std::chrono::high_resolution_clock::time_point t2 =
     std::chrono::high_resolution_clock::now();
@@ -89,12 +94,7 @@ void render_slice()
             << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
             << "us." << std::endl;
 
-  render_bitmap(
-        img.get(),
-        image_width,
-        image_height,
-        "zouli_image_pouetable.bmp"
-    );
+  render_bitmap(img,"zouli_image_pouetable.bmp");
 }
 
 
