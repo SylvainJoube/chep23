@@ -28,6 +28,8 @@
 //       covfie::vector::ulong3,
 //       covfie::backend::array<covfie::vector::float3>>>>>;
 
+// using data_t = kwk::make_table_t<kwk::as<pt3D<float>>, kwk::_3D, kwk::affine_transform(kwk::linear)>;
+
 /*
 C'est un array<float3>
 qui est strided avec 3 dimensions (ulong3)
