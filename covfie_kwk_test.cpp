@@ -52,7 +52,7 @@ $ clang++-15 covfie_kwk_test.cpp bitmap.cpp data_structures.cpp utils.cpp acts_s
 
 
 
-void render_slice()
+void render_slice(float z_value = 0)
 {
   acts_data a;
   a.read_acts_file();
@@ -67,7 +67,7 @@ void render_slice()
 
   kwk::for_each_index([ fw = static_cast<float>(width)
                       , fh = static_cast<float>(height)
-                      , z_value = 0.f
+                      , z_value
                       , &a
                       ]
   (auto& e, auto pos) 
@@ -96,12 +96,20 @@ void render_slice()
             << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
             << "us." << std::endl;
 
-  render_bitmap(img,"zouli_image_pouetable.bmp");
+  render_bitmap(img,"new_jimg_" + std::to_string(z_value/100) + ".bmp");
 }
+
 
 
 int main()
 {
-  render_slice();
+  // for (int i = 31; i < 64; ++i) {
+  //   display_pos(0, 0, i * 1000);
+  //   render_slice(i * 1000);
+
+  // }
+  render_slice(0);
+
+  pt3D<float> p = {};
   return 0;
 }
