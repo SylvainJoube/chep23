@@ -100,6 +100,17 @@ void acts_data::read_acts_file()
   mt.print();
 }
 
+void acts_data::display_pos(int x, int y, int z)
+{
+  std::vector<float> kv;
+  kv.push_back(x);
+  kv.push_back(y);
+  kv.push_back(z);
+  
+  // std::cout << "kv filled.\n";
+  // auto kres = m_transform * kv;
+}
+
 
 
 
@@ -116,7 +127,7 @@ pt3D<float> acts_data::at_affine(const pt3D<float> & p)
   std::size_t sd0 = dims;
   std::size_t sd1 = dims + 1;
 
-  kwk::matrix<float> m_transform(sd0, sd1, matrix);
+  kwk::matrix<float> m_transformm(sd0, sd1, matrix);
 
   #if ENABLE_DISPLAY
   if (display) m_transform.print();
@@ -125,7 +136,24 @@ pt3D<float> acts_data::at_affine(const pt3D<float> & p)
   std::vector<float> kv(p.begin(),p.end());
   
   // std::cout << "kv filled.\n";
-  auto kres = m_transform * kv;
+  auto kres = m_transformm * kv;
+
+  // std::cout << "kv: ";
+  // for (auto e : kv) {
+  //   std::cout << e << " ";
+  // }
+  // // std::cout << std::endl;
+
+  // std::cout << " - kr: ";
+  // for (auto e : kres) {
+  //   std::cout << e << " ";
+  // }
+  // std::cout << std::endl;
+
+  // std::vector<float> popo = {1, 2, 3};
+  // auto kaka = m_transform * popo;
+  // std::cout << kaka[0] << " " << kaka[1] << " " << kaka[2] << "\n";
+  
   // std::cout << "multiplicaton done.\n";
 
   #if ENABLE_DISPLAY
@@ -144,60 +172,7 @@ pt3D<float> acts_data::at_affine(const pt3D<float> & p)
 
 pt3D<float> acts_data::at_linear(const pt3D<float> &p)
 {
-  std::size_t i = static_cast<std::size_t>(p[0]);
-  std::size_t j = static_cast<std::size_t>(p[1]);
-  std::size_t k = static_cast<std::size_t>(p[2]);
-
-  float a = p[0] - i;
-  float b = p[1] - j;
-  float c = p[2] - k;
-
-  float ra = static_cast<float>(1.) - a;
-  float rb = static_cast<float>(1.) - b;
-  float rc = static_cast<float>(1.) - c;
-
-  #if ENABLE_DISPLAY
-  bool display = should_display();
-  #endif
-
-  pt3D<float> pc[8];
-
-  #if ENABLE_DISPLAY
-  if (display) std::cout << "Linear: ";
-  #endif
-
-  for (std::size_t n = 0; n < 8; ++n) {
-
-    std::size_t p0 = i + ((n & 4) ? 1 : 0);
-    std::size_t p1 = j + ((n & 2) ? 1 : 0);
-    std::size_t p2 = k + ((n & 1) ? 1 : 0);
-    auto pp = kumi::tuple{p0, p1, p2};
-
-    #if ENABLE_DISPLAY
-    if (display) std::cout << pp << " ";
-    #endif
-
-    pc[n] = data(pp);
-  }
-
-  #if ENABLE_DISPLAY
-  if (display) std::cout << "  :  = ";
-  #endif
-
-  pt3D<float> rv; // 3D
-  for (std::size_t q = 0; q < 3; ++q) // 3D
-  {
-    rv[q] = ra * rb * rc * pc[0][q] + ra * rb * c * pc[1][q] +
-            ra * b * rc * pc[2][q] + ra * b * c * pc[3][q] +
-            a * rb * rc * pc[4][q] + a * rb * c * pc[5][q] +
-            a * b * rc * pc[6][q] + a * b * c * pc[7][q];
-  }
-  
-  #if ENABLE_DISPLAY
-  if (display) std::cout << "(" << rv[0] << "," << rv[1] << "," << rv[2] << ")\n";
-  #endif
-
-  return rv;
+  return kwk::linear.interpolate(data, p[0], p[1], p[2]);
 }
 
 

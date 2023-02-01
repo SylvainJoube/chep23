@@ -19,10 +19,14 @@ struct acts_data
   pt3D<float> at_affine(const pt3D<float> &p);
   pt3D<float> at_linear(const pt3D<float> &p);
 
+  void display_pos(int x, int y, int z);
+
   static const std::size_t dims = 3;
   SCALAR_TYPE matrix[dims * (dims + 1)];
   std::size_t dimensions[dims];
   std::size_t read_numel;
+
+  // kwk::matrix<float> m_transform; // Calculated by read_acts_file
   
   data_t data;
   uint S_DISPLAY_COUNT_AFFINE = 0;
