@@ -52,7 +52,7 @@ $ clang++-15 covfie_kwk_test.cpp bitmap.cpp data_structures.cpp utils.cpp acts_s
 
 
 
-void render_slice(float z_value = 0)
+void render_slice_kiwaku(float z_value = 0)
 {
   acts_data a;
   a.read_acts_file();
@@ -90,13 +90,121 @@ void render_slice(float z_value = 0)
   , img
   );
 
+  /*
+  Issue Kiwaku : (02-02-2023)
+  - Source doit accepter des containers.
+  */
+
   std::chrono::high_resolution_clock::time_point t2 =
     std::chrono::high_resolution_clock::now();
   std::cout << "Rendering took "
             << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
             << "us." << std::endl;
 
-  render_bitmap(img,"new_jimg_" + std::to_string(z_value/100) + ".bmp");
+  render_bitmap(img,"210_jimg_" + std::to_string(z_value/100) + ".bmp");
+}
+
+
+void render_slice_xy(float z_value = 0)
+{
+  acts_data a;
+  a.read_acts_file();
+
+  uint const width  = 1024;
+  uint const height = 1024;
+
+  auto img_kwk = kwk::table{kwk::type = kwk::int8_, kwk::of_size(width, height)};
+
+  std::chrono::high_resolution_clock::time_point t1 =
+  std::chrono::high_resolution_clock::now();
+
+  float fw = static_cast<float>(width);
+  float fh = static_cast<float>(height);
+  auto img = img_kwk.get_data();
+  for (std::size_t x = 0; x < width; ++x) {
+    for (std::size_t y = 0; y < height; ++y) {
+      std::size_t linear_pos = x + y * width;
+
+      float fx = x / fw;
+      float fy = y / fh;
+
+      pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
+
+      pt3D<float> p = a.at(asked);
+      
+      img[linear_pos] =
+        static_cast<char> (std::lround
+                          (
+                            255.f *
+                            std::min
+                            (
+                              std::sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 1.0f
+                            )
+                          ));
+
+    }
+  }
+
+  std::chrono::high_resolution_clock::time_point t2 =
+    std::chrono::high_resolution_clock::now();
+  std::cout << "Rendering took "
+            << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+            << "us." << std::endl;
+
+  render_bitmap(img_kwk,"wh_jimg_" + std::to_string(z_value/100) + ".bmp");
+}
+
+void render_slice_yx(float z_value = 0)
+{
+  acts_data a;
+  a.read_acts_file();
+
+  uint const width  = 1024;
+  uint const height = 1024;
+
+  auto img_kwk = kwk::table{kwk::type = kwk::int8_, kwk::of_size(width, height)};
+
+  std::chrono::high_resolution_clock::time_point t1 =
+  std::chrono::high_resolution_clock::now();
+
+  float fw = static_cast<float>(width);
+  float fh = static_cast<float>(height);
+  auto img = img_kwk.get_data();
+
+  // for (std::size_t y = 0; y < height; ++y) {
+  //   for (std::size_t x = 0; x < width; ++x) {
+
+  for (std::size_t x = 0; x < width; ++x) {
+    for (std::size_t y = 0; y < height; ++y) {
+      std::size_t linear_pos = x * height + y;
+
+      float fx = x / fw;
+      float fy = y / fh;
+
+      pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
+
+      pt3D<float> p = a.at(asked);
+      
+      img[linear_pos] =
+        static_cast<char> (std::lround
+                          (
+                            255.f *
+                            std::min
+                            (
+                              std::sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 1.0f
+                            )
+                          ));
+
+    }
+  }
+
+  std::chrono::high_resolution_clock::time_point t2 =
+    std::chrono::high_resolution_clock::now();
+  std::cout << "Rendering took "
+            << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
+            << "us." << std::endl;
+
+  render_bitmap(img_kwk,"hw_jimg_" + std::to_string(z_value/100) + ".bmp");
 }
 
 
@@ -108,7 +216,8 @@ int main()
   //   render_slice(i * 1000);
 
   // }
-  render_slice(0);
+  render_slice_yx(0);
+  render_slice_xy(0);
 
   pt3D<float> p = {};
   return 0;
