@@ -6,3 +6,7 @@
 atlas.cvf
 
 exe
+
+img_out
+
+*.ignore
