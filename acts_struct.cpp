@@ -9,6 +9,8 @@
 #include "data_structures.hpp"
 
 #define ENABLE_DISPLAY false
+constexpr bool DISPLAY_AFFINE_MATRIX = false;
+constexpr bool DISPLAY_DIMENSIONS_SIZES = false;
 
 /*
 On a passé pas mal de temps à redevier l'ordre des coordonnées
@@ -52,29 +54,34 @@ void acts_data::read_acts_file()
   constexpr auto m = dims + 1;
 
   // float arr[dims][dims+1];
-  std::cout << "Affine matrix:\n";
-  for (std::size_t i = 0; i < n; ++i)
-  {
-    for (std::size_t j = 0; j < m; ++j)
+  if constexpr(DISPLAY_AFFINE_MATRIX) {
+    std::cout << "Affine matrix:\n";
+    for (std::size_t i = 0; i < n; ++i)
     {
-      auto e = matrix[i * m + j];
-      std::cout << kwk::padTo(std::to_string(e), 20) << "";
+      for (std::size_t j = 0; j < m; ++j)
+      {
+        auto e = matrix[i * m + j];
+        std::cout << kwk::padTo(std::to_string(e), 20) << "";
+      }
+      std::cout << "\n";
+    }
+    std::cout << "\n";
+    std::cout << "\n";
+  }
+
+  kwk::matrix<SCALAR_TYPE> kmt(n, m, matrix);
+  // kmt.print();
+
+  if constexpr (DISPLAY_DIMENSIONS_SIZES) {
+    std::cout << "Dimension sizes:  ";
+    for (std::size_t i = 0; i < dims; ++i)
+    {
+      std::cout << dimensions[i] << " ";
     }
     std::cout << "\n";
   }
 
-  std::cout << "\n";
-  std::cout << "\n";
 
-  kwk::matrix<SCALAR_TYPE> kmt(n, m, matrix);
-  kmt.print();
-
-  std::cout << "Dimension sizes:  ";
-  for (std::size_t i = 0; i < dims; ++i)
-  {
-    std::cout << dimensions[i] << " ";
-  }
-  std::cout << "\n";
   std::size_t excepted_numel = 0;
   for (std::size_t i = 0; i < dims; ++i)
   {
@@ -90,14 +97,15 @@ void acts_data::read_acts_file()
   }
   else
   {
-    std::cout << "OK, matching expected and read numel: " << read_numel << " \n";
+    // Silent ok
+    // std::cout << "OK, matching expected and read numel: " << read_numel << " \n";
   }
 
-  kwk::matrix<SCALAR_TYPE> mt(2, 3);
-  mt(0, 0) = 4;
-  std::cout << mt(0, 0) << "\n";
-
-  mt.print();
+  // now useless test
+  // kwk::matrix<SCALAR_TYPE> mt(2, 3);
+  // mt(0, 0) = 4;
+  // std::cout << mt(0, 0) << "\n";
+  // mt.print();
 }
 
 void acts_data::display_pos(int x, int y, int z)
