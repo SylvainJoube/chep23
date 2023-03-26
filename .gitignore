@@ -4,9 +4,12 @@
 
 # 
 atlas.cvf
+atlas.cvf.old
+ATLASBField_xyz.txt
 
 exe
 
 img_out
 
 *.ignore
+
