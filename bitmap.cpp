@@ -208,7 +208,7 @@ void render_bitmap(img_type const& data, std::string fname)
             /*
              * Retrieve the magnitude from the image, and write it.
              */
-            char r = img[h * x + y];
+            char r = img[h * x + y]; // TODO : passer à kiwaku ?
             bmp.write(&r, 1);
         }
 
