@@ -14,7 +14,7 @@
 #include <kwk/kwk.hpp>
 
 // Compute the exact type of our data storage
-using img_type = kwk::make_table_t<kwk::int8_, kwk::_2D>;
+using img_type = kwk::make_table_t<kwk::int8, kwk::_2D>;
 
 void render_bitmap(img_type const& img, std::string fname);
 

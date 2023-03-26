@@ -1,4 +1,3 @@
-#include "acts_struct.hpp"
 
 #include <iostream>
 #include <cstddef>
@@ -7,6 +6,9 @@
 #include <memory>
 #include <cmath>
 #include "data_structures.hpp"
+#include "utils/printer.hpp"
+#include "acts_struct.hpp"
+
 
 #define ENABLE_DISPLAY false
 constexpr bool DISPLAY_AFFINE_MATRIX = false;
@@ -61,7 +63,7 @@ void acts_data::read_acts_file()
       for (std::size_t j = 0; j < m; ++j)
       {
         auto e = matrix[i * m + j];
-        std::cout << kwk::padTo(std::to_string(e), 20) << "";
+        std::cout << bench_t::pad_right(std::to_string(e), 20) << "";
       }
       std::cout << "\n";
     }
