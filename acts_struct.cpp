@@ -63,6 +63,14 @@ void acts_data::read_acts_file()
       for (std::size_t j = 0; j < m; ++j)
       {
         auto e = matrix[i * m + j];
+        // if (e == 150) {
+        //   matrix[i * m + j] = 100;
+        //   e = 100;
+        // }
+        // if (i == j) e = 1;
+        // if (j == 3) e = 1;
+        // matrix[i * m + j] = e;
+
         std::cout << bench_t::pad_right(std::to_string(e), 20) << "";
       }
       std::cout << "\n";

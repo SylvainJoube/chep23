@@ -52,6 +52,8 @@ Commande pour relancer l'exemple :
 cmake --build build -- -j $(nproc) && build/examples/cpu/render_slice_cpu --input atlas.cvf --output my_image.bmp --z 0
 
 $ clang++-15 covfie_kwk_test.cpp bitmap.cpp acts_struct.cpp -o exe -O3 -std=c++20 -I"/home/data_not_sync/logiciels/kiwaku/include" && ./exe 
+
+$ mencoder mf://*.bmp -mf fps=10:type=bmp -ovc x264 -x264encopts bitrate=1200:threads=2 -o outputfile.mkv
 */
 
 
@@ -109,9 +111,16 @@ void render_slice_kiwaku(float z_value = 0, bool use_inline = false)
       float fx = x / fw;
       float fy = y / fh;
 
-      pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
+      // Size: 201 * 201 * 301
+      // Size*100: 20100 * 20100 * 30100
+      // pt3D<float> asked{fx * 20000.f, fy * 20000.f, z_value};
 
+      // pt3D<float> asked{fx * 200.f, fy * 200.f, z_value};
+      // pt3D<float> p = a.at_linear(asked);
+
+      pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
       pt3D<float> p = a.at(asked);
+
       // Do something with p
       e = static_cast<char>(std::lround(
                     255.f *
@@ -161,137 +170,31 @@ void render_slice_kiwaku(float z_value = 0, bool use_inline = false)
             << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
             << "us." << std::endl;
 
-  render_bitmap(img,"img_out/2023-03-26_jimg_" + std::to_string(z_value/100) + ".bmp");
+  render_bitmap(img,"img_out/2023-03-26_jimg_" + std::to_string(z_value/1000) + ".bmp");
 }
-
-
-// void render_slice_xy(float z_value = 0)
-// {
-//   acts_data a;
-//   a.read_acts_file();
-
-//   uint const width  = 1024;
-//   uint const height = 1024;
-
-//   auto img_kwk = kwk::table{kwk::type = kwk::int8_, kwk::of_size(width, height)};
-
-//   std::chrono::high_resolution_clock::time_point t1 =
-//   std::chrono::high_resolution_clock::now();
-
-//   float fw = static_cast<float>(width);
-//   float fh = static_cast<float>(height);
-//   auto img = img_kwk.get_data();
-//   for (std::size_t x = 0; x < width; ++x) {
-//     for (std::size_t y = 0; y < height; ++y) {
-//       std::size_t linear_pos = x + y * width;
-
-//       float fx = x / fw;
-//       float fy = y / fh;
-
-//       pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
-
-//       pt3D<float> p = a.at(asked);
-      
-//       img[linear_pos] =
-//         static_cast<char> (std::lround
-//                           (
-//                             255.f *
-//                             std::min
-//                             (
-//                               std::sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 1.0f
-//                             )
-//                           ));
-
-//     }
-//   }
-
-//   std::chrono::high_resolution_clock::time_point t2 =
-//     std::chrono::high_resolution_clock::now();
-//   std::cout << "Rendering took "
-//             << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-//             << "us." << std::endl;
-
-//   render_bitmap(img_kwk,"wh_jimg_" + std::to_string(z_value/100) + ".bmp");
-// }
-
-// void render_slice_yx(float z_value = 0)
-// {
-//   acts_data a;
-//   a.read_acts_file();
-
-//   uint const width  = 1024;
-//   uint const height = 1024;
-
-//   auto img_kwk = kwk::table{kwk::type = kwk::int8_, kwk::of_size(width, height)};
-
-//   std::chrono::high_resolution_clock::time_point t1 =
-//   std::chrono::high_resolution_clock::now();
-
-//   float fw = static_cast<float>(width);
-//   float fh = static_cast<float>(height);
-//   auto img = img_kwk.get_data();
-
-//   // for (std::size_t y = 0; y < height; ++y) {
-//   //   for (std::size_t x = 0; x < width; ++x) {
-
-//   for (std::size_t x = 0; x < width; ++x) {
-//     for (std::size_t y = 0; y < height; ++y) {
-//       std::size_t linear_pos = x * height + y;
-
-//       float fx = x / fw;
-//       float fy = y / fh;
-
-//       pt3D<float> asked{fx * 20000.f - 10000.f, fy * 20000.f - 10000.f, z_value};
-
-//       pt3D<float> p = a.at(asked);
-      
-//       img[linear_pos] =
-//         static_cast<char> (std::lround
-//                           (
-//                             255.f *
-//                             std::min
-//                             (
-//                               std::sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]), 1.0f
-//                             )
-//                           ));
-
-//     }
-//   }
-
-//   std::chrono::high_resolution_clock::time_point t2 =
-//     std::chrono::high_resolution_clock::now();
-//   std::cout << "Rendering took "
-//             << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count()
-//             << "us." << std::endl;
-
-//   render_bitmap(img_kwk,"hw_jimg_" + std::to_string(z_value/100) + ".bmp");
-// }
-
-
 
 int main()
 {
-
   bool use_inline;
+  float offset = 15000;
+
+  printer_t::head("KIWAKU INLINE");
 
   use_inline = true;
   write_f.open("bench_acts_field_kiwaku_inline.txt");
   write_f << "1\n";
-  for (int i = 31; i < 64; ++i) {
-    // display_pos(0, 0, i * 1000);
-    render_slice_kiwaku(i * 1000, use_inline);
+  for (float i = offset; i < 30000+offset; i += 6000) {
+    render_slice_kiwaku(i, use_inline);
   }
-
-  // render_slice_yx(0);
-  // render_slice_xy(0);
   write_f.close();
 
+  printer_t::head("KIWAKU NOT INLINE");
 
   use_inline = false;
   write_f.open("bench_acts_field_kiwaku_noinline.txt");
   write_f << "1\n";
-  for (int i = 31; i < 64; ++i) {
-    render_slice_kiwaku(i * 1000, use_inline);
+  for (float i = offset; i < 30000+offset; i += 6000) {
+    render_slice_kiwaku(i, use_inline);
   }
   write_f.close();
 
