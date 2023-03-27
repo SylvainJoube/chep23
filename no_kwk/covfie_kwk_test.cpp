@@ -56,14 +56,16 @@ void render_slice(float z_value = 0)
   acts_data a;
   a.read_acts_file();
 
-  uint image_width  = 1024;
-  uint image_height = 1024;
+  std::size_t image_width  = 1024;
+  std::size_t image_height = 1024;
 
   bench::chrono_t chrono;
   chrono.Init();
 
-  std::unique_ptr<char[]> img =
-    std::make_unique<char[]>(image_width * image_height);
+  char* img = new char[image_width * image_height];
+
+  // std::unique_ptr<char[]> img =
+  //   std::make_unique<char[]>(image_width * image_height);
 
   std::chrono::high_resolution_clock::time_point t1 =
     std::chrono::high_resolution_clock::now();
@@ -118,20 +120,26 @@ void render_slice(float z_value = 0)
             << "us." << std::endl;
 
   render_bitmap(
-        img.get(),
+        img,//.get(),
         image_width,
         image_height,
         "../img_out/2023-03-26_standalone_" + std::to_string(z_value/100) + ".bmp"
     );
+    
+  delete[] img;
 }
 
 
 int main()
 {
+  float offset = 15000;
+  printer_t::head("HANDMADE STANDALONE (inline)");
+
   write_f.open("bench_acts_field_standalone.txt");
   write_f << "1\n";
-  for (int i = 31; i < 64; ++i) {
-    render_slice(i * 1000);
+  // for (int i = 31; i < 64; ++i) {
+  for (float i = offset; i < 30000+offset; i += 6000) {
+    render_slice(i);
   }
   write_f.close();
 

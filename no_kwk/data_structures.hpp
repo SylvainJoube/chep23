@@ -17,6 +17,17 @@ namespace kwk
     inline explicit matrix(std::size_t d0_, std::size_t d1_) : d0(d0_), d1(d1_)
     {
       elems.resize(d0 * d1);
+    }    
+    
+    // If used, use init(std::size_t d0_, std::size_t d1_, T* array)
+    inline explicit matrix() = default;
+    
+    inline void init(std::size_t d0_, std::size_t d1_, T* array)
+    {
+      d0 = d0_;
+      d1 = d1_;
+      elems.resize(d0 * d1);
+      for (uint i = 0; i < d0*d1; ++i) elems[i] = array[i];
     }
 
     inline explicit matrix(std::size_t d0_, std::size_t d1_, T* array) : d0(d0_), d1(d1_)

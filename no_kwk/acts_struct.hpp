@@ -19,6 +19,8 @@ struct acts_data
   inline pt3D<float> at_strided(const pt3D<std::size_t> &c);
   inline pt3D<float> at_array(std::size_t c) { return data[c]; }
 
+  inline void init_affine_matrix();
+
   static const std::size_t dims = 3;
   SCALAR_TYPE matrix[dims * (dims + 1)];
   std::size_t stride_sizes[dims];
@@ -26,6 +28,7 @@ struct acts_data
   std::unique_ptr<pt3D<float>[]> data;
   uint S_DISPLAY_COUNT_AFFINE = 0;
   uint S_DISPLAY_COUNT_MAX = 0;
+  kwk::matrix<float> m_transform_global;
 
   const bool ENABLE_DISPLAY = false;
 
@@ -66,6 +69,8 @@ void acts_data::read_acts_file()
 
   constexpr auto n = dims;
   constexpr auto m = dims + 1;
+
+  init_affine_matrix();
 
 
   #if ENABLE_DISPLAY
@@ -139,10 +144,10 @@ pt3D<float> acts_data::at_affine(const pt3D<float> & p)
   bool display = should_display(true);
   #endif
 
-  std::size_t sd0 = dims;
-  std::size_t sd1 = dims + 1;
+  // std::size_t sd0 = dims;
+  // std::size_t sd1 = dims + 1;
 
-  kwk::matrix<float> m_transform(sd0, sd1, matrix);
+  // kwk::matrix<float> m_transform(sd0, sd1, matrix);
 
   #if ENABLE_DISPLAY
   if (display) m_transform.print();
@@ -151,7 +156,7 @@ pt3D<float> acts_data::at_affine(const pt3D<float> & p)
   std::vector<float> kv(p.begin(),p.end());
   
   // std::cout << "kv filled.\n";
-  auto kres = m_transform * kv;
+  auto kres = m_transform_global * kv;
   // std::cout << "multiplicaton done.\n";
 
   #if ENABLE_DISPLAY
@@ -256,4 +261,22 @@ pt3D<float> acts_data::at_strided(const pt3D<std::size_t> &c)
   #endif
 
   return value;
+}
+
+inline void acts_data::init_affine_matrix()
+{
+  // ==== AFFINE ====
+  #if ENABLE_DISPLAY
+  bool display = should_display(true);
+  #endif
+
+  std::size_t sd0 = dims;
+  std::size_t sd1 = dims + 1;
+
+  //kwk::matrix<float> 
+  m_transform_global.init(sd0, sd1, matrix);
+
+  #if ENABLE_DISPLAY
+  if (display) m_transform_global.print();
+  #endif
 }
